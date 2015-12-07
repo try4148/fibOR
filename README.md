@@ -1,5 +1,3 @@
-一个简单的基于fibjs和mysql的restFul框架
-
-参考了https://github.com/winok8/mfib
-
-实现功能get post put delete
+一个简单的基于fibjs的restFul框架
+数据交换协议尽力参照odata标准
+第一步的计划是实现对mysql的支持
