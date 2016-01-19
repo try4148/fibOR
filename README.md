@@ -22,6 +22,7 @@ $filter,$orderby,$skip,$top,$select,$count,$metadata
 
 
 逻辑操作符(其中not操作符仅完成contains，startswith，endwith三个函数部分)
+
 | 操作符 | 描述     | 例子                          |
 | ------ | -------- | ----------------------------- |
 | and    | 逻辑与   | price le 200 and price gt 3.5 |
@@ -30,12 +31,14 @@ $filter,$orderby,$skip,$top,$select,$count,$metadata
 
 
 分组操作符
+
 | 操作符 | 描述       | 例子                                    |
 | ------ | ---------- | --------------------------------------- |
 | ( )    | 优先级分组 | (price gt 5 or price le 3) and id gt 10 |
 
 
 字符串函数
+
 | 操作符      | 例子                     |
 | ----------- | ------------------------ |
 | contains    | contains(name, '公司')   |
