@@ -1,0 +1,38 @@
+{
+     "name": "test",
+     "type": "mysqlTable",
+     "content": {
+         "fields": {
+             "id": "number",
+             "xm": "string",
+             "tp": {
+                 "type": "binary",
+                 "pattern": "",
+                 "select": true,
+                 "insert": true,
+                 "condition": false
+             },
+             "birth": {
+                 "type": "datetime",
+                 "pattern": "YYYY-MM",
+                 "select": true,
+                 "insert": true,
+                 "condition": false
+             }
+         },
+         "index": {
+             "fields": "id",
+             "must": false
+         }
+     },
+     "config": {
+         "resource": "mysql://root:fibjs@127.0.0.1/test",
+         "mapping": {
+             "table": "test",
+             "fields": {
+                 "xm": "name",
+                 "tp": "photo"
+             }
+         }
+     }
+ }

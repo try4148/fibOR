@@ -1,0 +1,12 @@
+{
+	"type": "oDataSvc",
+	"content": {
+		"svcInfo": {
+			"svcName": "Fibjs OData Restful Web Service",
+			"svcVersion": "0.0.1",
+			"license": "GPL v2",
+			"copyRight": "CopyRight 2016-[date] 刀叉4148(try4148@163.com). All Rights Reserved."
+		},
+		"svcMetadata": {}
+	}
+}
