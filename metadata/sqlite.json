@@ -1,0 +1,40 @@
+{
+     "name": "test",
+     "type": "sqliteTable",
+     "content": {
+         "fields": {
+             "id": "number",
+             "filename": "string",
+             "createtime": {
+                 "type": "datetime",
+                 "pattern": "YYYY-MM-DD",
+                 "select": true,
+                 "condition": false
+             },
+             "filedata": {
+                 "type": "binary",
+                 "pattern": "",
+                 "select": false,
+                 "condition": false
+             },
+             "coverimage": {
+                 "type": "binary",
+                 "pattern": "",
+                 "select": false,
+                 "condition": false
+             }
+         },
+         "index": {
+             "fields": "id",
+             "must": false
+         }
+     },
+     "config": {
+         "resource": "sqlite:./fibOR_Test.db",
+         "mapping": {
+             "table": "midi",
+             "fields": {
+             }
+         }
+     }
+ }
