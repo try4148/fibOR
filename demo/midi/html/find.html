@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Pragma" content="no-cache" />  
+	<meta http-equiv="Expires" content="-1" />  
+	<meta http-equiv="Cache-Control" content="no-cache" />
+	<title>接口信息</title>
+	<link rel="stylesheet" type="text/css" href="../css/themes/metro/easyui.css">
+	<link rel="stylesheet" type="text/css" href="../css/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="../css/demo.css">
+	<script type="text/javascript" src="../js/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="../js/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript" src="../js/fibOR.js"></script>
+	<script type="text/javascript" src="../js/midi.js"></script>
+</head>
+<body>
+	<div style="display:none">
+		<form id="fibor" method="get">
+			<input type="text" id="id" name="id" metatype="number" keyword="eq" />
+			<input type="text" id="filename" name="filename" metatype="string" keyword="contains" />
+			<input type="text" id="start" name="createtime" metatype="datetime" keyword="ge" />
+			<input type="text" id="end" name="createtime" metatype="datetime"  keyword="le" />
+		</form>
+	</div>
+	<div style="width:800px;">
+	    <form id="ff"  align="left" class="easyui-form" method="post" data-options="novalidate:true">
+	    	<table cellpadding="5">
+	    		<tr>
+	    			<td>记录编号:</td>
+	    			<td>
+		    			<input 
+			    			class="easyui-numberbox" 
+			    			name="_id" 
+			    			data-options="onChange:function(){setId()}" 
+			    			style="width:105px;" 
+			    			id="_id" 
+			    		/>
+	    			</td>
+	    			<td>文件名称:</td>
+	    			<td>
+		    			<input 
+			    			class="easyui-textbox" 
+			    			name="_filename" 
+			    			data-options="onChange:function(){setFilename()}" 
+			    			style="width:105px;" 
+			    			id="_filename" 
+			    		/>
+	    			</td>
+	    			<td>起始时间:</td>
+	    			<td>
+		    			<input 
+			    			class="easyui-datebox" 
+			    			name="_start" 
+			    			data-options="onChange:function(){setStart()}" 
+			    			style="width:105px;" 
+			    			id="_start" 
+			    		/>
+	    			</td>
+	    			<td>终止时间:</td>
+	    			<td>
+		    			<input 
+			    			class="easyui-datebox" 
+			    			name="_end" 
+			    			data-options="onChange:function(){setEnd()}" 
+			    			style="width:105px;" 
+			    			id="_end" 
+			    		/>
+	    			</td>
+	    			<td>
+	    				<a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="toSearch()">查询</a>
+	    			</td>
+	    		</tr>
+	    	</table>
+	    </form>
+	</div>
+	<table
+		id="midilist"
+		class="easyui-datagrid"
+		title="midi信息"
+		style="width:800px;height:400px"
+		data-options="
+			rownumbers: true,
+			singleSelect: true,
+			iconCls: 'icon-save',
+			url:  gUrl + gFilter + gLimit + getOrderby(),
+			method: 'get',
+			pagination:true,
+			onSortColumn:onSortColumn
+		"
+	>
+		<thead>
+			<tr>
+				<th data-options="field:'id',sortable:true" width="15%">记录编号</th>
+				<th data-options="field:'filename',sortable:true" width="15%">文件名称</th>
+				<th data-options="field:'createtime',sortable:true" width="15%">录入时间</th>
+				<th 
+					data-options="field:'coverimage',
+									  formatter:function(value){
+									  	 value = value === '' ? 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==' : value;
+									  	 str = '<img style=\'height:150px;\' src=\'data:image/png;base64,'+value+'\'/>';
+										 return str;
+									  }" 
+					width="15%"
+				>
+					文件封面
+				</th>
+				<th 
+					data-options="field:'download',
+								  formatter:function(value,row){
+								  	 str = '<a href=\'#\' onClick=\'play('+row.id+');\'>试听</a>&nbsp;&nbsp;<a href=\'../../fibor/sqlite/midi('+row.id+')?$select=filename&$metadata=filedata\'>下载</a>';
+									 return str;
+								  }" 
+					width="15%"
+				>
+					文件下载
+				</th>
+				<th 
+					data-options="field:'todo',
+							      formatter:function(value,row){
+								  	 str = '<a href=\'#\' onClick=\'edit('+row.id+');\'>修改</a>&nbsp;&nbsp;<a href=\'#\' onClick=\'del('+row.id+');\'>删除</a>';
+									 return str;
+								  }" 
+					width="15%"
+				>
+					修改删除
+				</th>
+			</tr>
+		</thead>
+	</table>
+
+	<div id="dlg" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
+            closed="true" buttons="#dlg-buttons">
+        <div style="display:none">
+			<form id="dfibor" method="put">
+				<input type="file" id="dfilename" name="filename" metatype="string" accept="audio/mid" />
+				<input type="text" id="dfiledata" name="filedata" metatype="binary" />
+				<input type="text" id="dcreatetime" name="createtime" metatype="datetime" />
+				<input type="text" id="dcoverimage" name="coverimage" metatype="binary" />
+			</form>
+			<input type="file" id="dcovername" name="covername" metatype="string" accept="image/jpeg" />
+		</div>
+        <form id="fm"  align="left" class="easyui-form" method="post" data-options="novalidate:true">
+	    	<table cellpadding="5">
+	    		<tr>
+	    			<td>MIDI文件:</td>
+	    			<td>
+	    				<input
+		    				class="easyui-textbox" 
+		    				data-options="required:false,
+		    							  iconWidth: 22,
+		    							  prompt:'选择一个midi文件',
+										  icons: [{
+											  iconCls:'icon-add',
+											  handler: function(){
+												  addMidiFile();
+											  }
+										  }]" 
+							style="width:300px;" 
+							missingMessage="此项必填，点击选择midi文件"
+							id="_dfilename"
+						/>
+	    			</td>
+	    		</tr>
+	    		<tr>
+	    			<td>录入时间:</td>
+	    			<td>
+		    			<input 
+			    			class="easyui-datebox" 
+			    			name="_createtime" 
+			    			data-options="onChange:function(){setCreateTime()},required:false" 
+			    			style="width:300px;" 
+			    			missingMessage="此项必填,YYYY-MM-DD" 
+			    			id="_dcreatetime" 
+			    		/>
+	    			</td>
+	    		</tr>
+	    		<tr>
+	    			
+	    		</tr>
+	    		<tr>
+	    			<td>封面文件:</td>
+	    			<td>
+	    				<input 
+		    				class="easyui-textbox" 
+		    				data-options="iconWidth: 22,
+		    							  prompt:'选择一个jpg文件',
+										  icons: [{
+											  iconCls:'icon-add',
+											  handler: function(){
+												  addCoverFile();
+											  }
+										  }]" 
+							style="width:300px;" 
+							missingMessage="此项选填，点击选择jpg文件"
+							id="_dcovername"
+						/>
+					</td>
+	    		</tr>
+	    	</table>
+	    </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="submitForm()" style="width:90px">提交</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">关闭</a>
+    </div>
+
+	<script type="text/javascript">
+		var eUrl;
+		var gUrl = '../../fibor/sqlite/midi?$select=id,filename,createtime,coverimage&$count=id';
+		var gFilter = '&$filter=id gt 0';
+		var gLimit = '&$skip=0&$top=10';
+		var gOrderbyArray = ['id'];
+		var gOrderbyObject = {
+			'id': 'asc'
+		}
+		function getOrderby(){
+			var tempOrderby = '';
+			for (var i = 0; i < gOrderbyArray.length; i++) {
+				var o = gOrderbyArray[i];
+				tempOrderby 
+					= tempOrderby === '' 
+					? o + ' ' + gOrderbyObject[o] 
+					: tempOrderby + ',' + o + ' ' + gOrderbyObject[o];
+			}
+			return '&$orderby=' + tempOrderby;
+		}
+
+		function toSearch(){
+			var filter = fibor.serialize('fibor');
+			if(filter === ''){
+				gFilter = '&$filter=id gt 0';
+			}
+			else{
+				gFilter = '&$filter='+encodeURI(filter);
+			}
+			$('#midilist').datagrid('options').url = gUrl + gFilter + gLimit + getOrderby();
+			$("#midilist").datagrid('reload');
+		}
+
+		$(document).ready(function(){
+			$('#ff').form('clear');
+			clearFilter();
+			$("#midilist").datagrid("getPager").pagination({
+				onRefresh:function(pageNumber,pageSize){
+					gLimit = '&$skip=' + pageSize * (pageNumber-1) + '&$top=' + pageSize;
+         			$('#midilist').datagrid('options').url = gUrl + gFilter + gLimit +getOrderby();
+        			$("#midilist").datagrid('reload');
+				},
+				onSelectPage:function(pageNumber,pageSize){
+					gLimit = '&$skip=' + pageSize * (pageNumber-1) + '&$top=' + pageSize;
+         			$('#midilist').datagrid('options').url = gUrl + gFilter + gLimit +getOrderby();
+        			$("#midilist").datagrid('reload');
+				}
+			});
+			$('#dfilename').change(function() {
+				var file = $('#dfilename')[0].files[0];
+				if (file) {
+					if (file.size > 1024*1024) {
+						alert('选择文件大小限制1MB内');
+						fileClear('#dfilename');
+						dataClear('#dfiledata');
+					} 
+					else {
+						var reader = new FileReader();
+						reader.readAsDataURL(file);
+						reader.onload = function(event) {
+							var base64 = event.target.result;
+							var index = base64.indexOf('base64,') + 'base64,'.length;
+							var fileBase64 = base64.substr(index);
+							$('#dfiledata')[0].value = fileBase64;
+							$('#_dfilename').textbox('setValue',$('#dfilename').val());
+						};
+					}
+				}
+				else{
+					dataClear('#dfiledata');
+					textClear('#_dfilename');
+				}
+			});
+			$('#dcovername').change(function() {
+				var file = $('#dcovername')[0].files[0];
+				if (file) {
+					if (file.size > 1024*1024) {
+						alert('选择文件大小限制1MB内');
+						fileClear('#dcovername');
+						dataClear('#dcoverimage');
+					} 
+					else {
+						var reader = new FileReader();
+						reader.readAsDataURL(file);
+						reader.onload = function(event) {
+							var base64 = event.target.result;
+							var index = base64.indexOf('base64,') + 'base64,'.length;
+							var fileBase64 = base64.substr(index);
+							$('#dcoverimage')[0].value = fileBase64;
+							$('#_dcovername').textbox('setValue',$('#dcovername').val());
+						};
+					}
+				}
+				else{
+					dataClear('#dcoverimage');
+					textClear('#_dcovername');
+				}
+			});
+		})
+
+		function fileClear(fileid){
+			var filebox = $(fileid);
+			filebox.after(filebox.clone(true).val(''));
+			filebox.remove();
+ 		}
+ 		function dataClear(dataid){
+			$(dataid).val('');
+ 		}
+ 		function textClear(textid){
+			$(textid).textbox('setValue','');
+ 		}
+
+		function submitForm(){
+			$('#fm').form('submit',{
+				onSubmit: function() {
+					if ($(this).form('enableValidation').form('validate')) {
+						var body = fibor.serialize('dfibor');
+						$.ajax({
+							url: eUrl, // 跳转到 action  
+							data: body,
+							type: 'put',
+							async: false,
+							cache: false,
+							dataType: 'json',
+							success: function(data) {
+								if (data.result.affected == 1) {
+									alert("修改成功!");
+									clearForm();
+									$("#midilist").datagrid('reload');
+									$('#dlg').dialog('close');
+									$('#fm').form('disableValidation');
+								} else {
+									alert("修改失败!原因:" + JSON.stringify(data));
+								}
+							},
+							error: function(data) {
+								alert(JSON.stringify(data));
+								//alert("异常！");
+							}
+						});
+					}
+					else {
+						alert('表格中有选项未填');
+					}
+					return false;
+				}
+			});
+		}
+		function clearForm(){
+			fileClear('#dfilename');
+			dataClear('#dfiledata');
+			fileClear('#dcovername');
+			dataClear('#dcoverimage');
+			dataClear('#dcreatetime');
+			$('#fm').form('clear');
+		}
+		function addMidiFile(){
+			$('#dfilename').click();
+		}
+		function addCoverFile() { //JSON.stringify
+			$('#dcovername').click();
+		}
+		function setCreateTime() { //JSON.stringify
+			var time = $('#_dcreatetime').datebox('getValue');
+			$("#dcreatetime").val(time);
+		}
+
+		function clearFilter(){
+			$("#id").val('');
+			$("#filename").val('');
+			$("#start").val('');
+			$("#end").val('');
+		}
+		function setId(){
+			var id = $('#_id').numberbox('getValue');
+			$("#id").val(id);
+		}
+		function setFilename(){
+			var filename = $('#_filename').textbox('getValue');
+			$("#filename").val(filename);
+		}
+		function setStart(){
+			var start = $('#_start').datebox('getValue');
+			$("#start").val(start);
+		}
+		function setEnd(){
+			var end = $('#_end').datebox('getValue');
+			$("#end").val(end);
+		}
+		function play(id){
+			MIDIjs.play('../../fibor/sqlite/midi('+id+')?$select=filename&$metadata=filedata');
+		}
+		function del(id) {
+			$.messager.confirm('注意', '确认要删除吗?', function(r) {
+				if (r) {
+					$.ajax({
+						url: '../../fibor/sqlite/midi(' + id + ')?$method=delete', // 跳转到 action  
+						data: null,
+						type: 'get',
+						async: false,
+						cache: false,
+						dataType: 'json',
+						success: function(data) {
+							if (data.result.affected == 1) {
+								alert('删除成功');
+								$("#midilist").datagrid('reload');
+							} else {
+								alert('删除失败');
+							}
+						},
+						error: function(data) {
+							alert(JSON.stringify(data));
+							//alert("异常！");
+						}
+					});
+				}
+			});
+		}
+		function edit(id) {
+            $('#dlg').dialog('open').dialog('center').dialog('setTitle','midi修改');
+            eUrl = '../../fibor/sqlite/midi('+id+')';
+		}
+		function onSortColumn(sort,order){
+			gOrderbyObject[sort] = order;
+			var ia = $.inArray(sort, gOrderbyArray);
+			if (ia > -1) {
+				gOrderbyArray.splice(ia, 1);
+			}
+			gOrderbyArray.splice(0, 0, sort);
+
+			$('#midilist').datagrid('options').url = gUrl + gFilter + gLimit +getOrderby();
+        	$("#midilist").datagrid('reload');
+		} 
+
+	</script>
+</body>
+</html>

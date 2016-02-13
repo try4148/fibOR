@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Pragma" content="no-cache" />  
+	<meta http-equiv="Expires" content="-1" />  
+	<meta http-equiv="Cache-Control" content="no-cache" />
+	<title>FibOR Demo</title>
+	<link rel="stylesheet" type="text/css" href="./css/themes/metro/easyui.css">
+	<link rel="stylesheet" type="text/css" href="./css/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="./css/demo.css">
+	<script type="text/javascript" src="./js/jquery.min.js"></script>
+	<script type="text/javascript" src="./js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="./js/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript">
+		function addPanel(a){
+			if(!$('#ct').tabs('exists',a.text)){
+				$('#ct').tabs('add',{
+					title:a.text,
+					content:createFrame(a.name),
+					closable:true
+				});
+			}else{
+				$('#ct').tabs('select',a.text);
+			}
+		}
+		function createFrame(url)
+		{
+			var s = '<iframe name="mainFrame" scrolling="auto" frameborder="0"  src="./html/'+url+'.html" style="width:100%;height:100%;"></iframe>';
+			return s;
+		}
+	</script>
+</head>
+<body class="easyui-layout">
+	<div data-options="region:'north',border:false" style="height:75px;background:#EEEEEE;padding:10px"><h2>FibOR Demo  </h2><span  style="padding-bottom:10px;font-weight:bold;color:#2288ff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;一个简单的midi管理系统</span></div>
+	<div data-options="region:'west',split:true,title:'功能菜单'" style="width:88px;padding:1px;">
+		<div id="titlebar" style="padding:2px">
+			<a href="javascript:void(0)" class="easyui-linkbutton" style="width:100%" data-options="iconCls:'icon-large-shapes',size:'large',iconAlign:'top'" onclick="addPanel(this)" name="find">midi清单</a>
+			<a href="javascript:void(0)" class="easyui-linkbutton" style="width:100%" data-options="iconCls:'icon-large-smartart',size:'large',iconAlign:'top'" onclick="addPanel(this)" name="into">midi录入</a>
+		</div>
+	</div>
+	<div data-options="region:'south',border:false" style="text-align:right;height:22px;background:#EEEEEE;padding:3px;">刀叉4148&nbsp;©2016-<script type="text/javascript">var myDate = new Date();document.write(myDate.getFullYear())</script>&nbsp;<span style="font-weight:bold;color:#2288ff">FibOR</span>&nbsp;v0.0.1&nbsp;&nbsp;</div>
+	<div id="mt" data-options="region:'center',title:'功能窗口'">
+		<div id="ct" class="easyui-tabs" data-options="fit:true,border:false,plain:true">
+			<div title="说明" data-options="href:'about.html'" style="padding:10px"></div>
+		</div>
+	</div>
+</body>
+</html>

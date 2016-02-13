@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Pragma" content="no-cache" />  
+	<meta http-equiv="Expires" content="-1" />  
+	<meta http-equiv="Cache-Control" content="no-cache" />
+	<title>基本信息</title>
+	<link rel="stylesheet" type="text/css" href="../css/themes/metro/easyui.css">
+	<link rel="stylesheet" type="text/css" href="../css/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="../css/demo.css">
+	<script type="text/javascript" src="../js/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="../js/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript" src="../js/fibOR.js"></script>
+	<script>
+		$("document").ready(function() {
+			$('#filename').change(function() {
+				var file = $('#filename')[0].files[0];
+				if (file) {
+					if (file.size > 1024*1024) {
+						alert('选择文件大小限制1MB内');
+						fileClear('#filename');
+						dataClear('#filedata');
+					} 
+					else {
+						var reader = new FileReader();
+						reader.readAsDataURL(file);
+						reader.onload = function(event) {
+							var base64 = event.target.result;
+							var index = base64.indexOf('base64,') + 'base64,'.length;
+							var fileBase64 = base64.substr(index);
+							$('#filedata')[0].value = fileBase64;
+							$('#_filename').textbox('setValue',$('#filename').val());
+						};
+					}
+				}
+				else{
+					dataClear('#filedata');
+					textClear('#_filename');
+				}
+			});
+			$('#covername').change(function() {
+				var file = $('#covername')[0].files[0];
+				if (file) {
+					if (file.size > 1024*1024) {
+						alert('选择文件大小限制1MB内');
+						fileClear('#covername');
+						dataClear('#coverimage');
+					} 
+					else {
+						var reader = new FileReader();
+						reader.readAsDataURL(file);
+						reader.onload = function(event) {
+							var base64 = event.target.result;
+							var index = base64.indexOf('base64,') + 'base64,'.length;
+							var fileBase64 = base64.substr(index);
+							$('#coverimage')[0].value = fileBase64;
+							$('#_covername').textbox('setValue',$('#covername').val());
+						};
+					}
+				}
+				else{
+					dataClear('#coverimage');
+					textClear('#_covername');
+				}
+			});
+		});
+
+ 		function fileClear(fileid){
+			var filebox = $(fileid);
+			filebox.after(filebox.clone(true).val(''));
+			filebox.remove();
+ 		}
+ 		function dataClear(dataid){
+			$(dataid).val('');
+ 		}
+ 		function textClear(textid){
+			$(textid).textbox('setValue','');
+ 		}
+
+		function submitForm(){
+			$('#ff').form('submit',{
+				onSubmit: function() {
+					if ($(this).form('enableValidation').form('validate')) {
+						var body = fibor.serialize('fibor');
+						$.ajax({
+							url: '../../fibor/sqlite/midi', // 跳转到 action  
+							data: body,
+							type: 'post',
+							async: false,
+							cache: false,
+							dataType: 'json',
+							success: function(data) {
+								if (data['0']['affected'] == 1) {
+									alert("录入成功!");
+									clearForm();
+									$('#ff').form('disableValidation');
+								} else {
+									alert("录入失败!原因:" + JSON.stringify(data));
+								}
+							},
+							error: function(data) {
+								alert(JSON.stringify(data));
+								//alert("异常！");
+							}
+						});
+					}
+					else {
+						alert('表格中有选项未填');
+					}
+					return false;
+				}
+			});
+		}
+		function clearForm(){
+			fileClear('#filename');
+			dataClear('#filedata');
+			fileClear('#covername');
+			dataClear('#coverimage');
+			dataClear('#createtime');
+			$('#ff').form('clear');
+		}
+		function addMidiFile(){
+			$('#filename').click();
+		}
+		function addCoverFile() { //JSON.stringify
+			$('#covername').click();
+		}
+		function setCreateTime() { //JSON.stringify
+			var time = $('#_createtime').datebox('getValue');
+			$("#createtime").val(time);
+		}
+	</script>
+</head>
+<body>
+	<div style="display:none">
+		<form id="fibor" method="post">
+			<input type="file" id="filename" name="filename" metatype="string" accept="audio/mid" />
+			<input type="text" id="filedata" name="filedata" metatype="binary" />
+			<input type="text" id="createtime" name="createtime" metatype="datetime" />
+			<input type="text" id="coverimage" name="coverimage" metatype="binary" />
+		</form>
+		<input type="file" id="covername" name="covername" metatype="string" accept="image/jpeg" />
+	</div>
+	<div style="width:400px;">
+	    <form id="ff"  align="left" class="easyui-form" method="post" data-options="novalidate:true">
+	    	<table cellpadding="5">
+	    		<tr>
+	    			<td>MIDI文件:</td>
+	    			<td>
+	    				<input
+		    				class="easyui-textbox" 
+		    				data-options="required:true,
+		    							  iconWidth: 22,
+		    							  prompt:'选择一个midi文件',
+										  icons: [{
+											  iconCls:'icon-add',
+											  handler: function(){
+												  addMidiFile();
+											  }
+										  }]" 
+							style="width:300px;" 
+							missingMessage="此项必填，点击选择midi文件"
+							id="_filename"
+						/>
+	    			</td>
+	    		</tr>
+	    		<tr>
+	    			<td>录入时间:</td>
+	    			<td>
+		    			<input 
+			    			class="easyui-datebox" 
+			    			name="_createtime" 
+			    			data-options="onChange:function(){setCreateTime()},required:true" 
+			    			style="width:300px;" 
+			    			missingMessage="此项必填,YYYY-MM-DD" 
+			    			id="_createtime" 
+			    		/>
+	    			</td>
+	    		</tr>
+	    		<tr>
+	    			
+	    		</tr>
+	    		<tr>
+	    			<td>封面文件:</td>
+	    			<td>
+	    				<input 
+		    				class="easyui-textbox" 
+		    				data-options="iconWidth: 22,
+		    							  prompt:'选择一个jpg文件',
+										  icons: [{
+											  iconCls:'icon-add',
+											  handler: function(){
+												  addCoverFile();
+											  }
+										  }]" 
+							style="width:300px;" 
+							missingMessage="此项选填，点击选择jpg文件"
+							id="_covername"
+						/>
+					</td>
+	    		</tr>
+	    	</table>
+	    </form>
+	    <div style="padding-right:30px" align="right">
+	    	<a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="submitForm()">提交</a>
+	    	<a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" onclick="clearForm()">清除</a>
+	    </div>
+	</div>
+</body>
+</html>
